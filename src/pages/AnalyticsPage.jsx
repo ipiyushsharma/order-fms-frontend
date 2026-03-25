@@ -391,9 +391,9 @@ return true
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
               <StatCard label="Total Orders"     value={filteredOrders.length}    orders={filteredOrders}     onCardClick={openModal} />
               <StatCard label="Total Completed"  value={completedFiltered.length} sub="moved to history"      valueColor="text-green-700" orders={completedFiltered} onCardClick={openModal} />
-              <StatCard label="Estimate On Time" value={estOnTimeOrders.length}   sub="within 1hr of order"   valueColor="text-green-700" orders={estOnTimeOrders}   onCardClick={openModal} />
-              <StatCard label="Estimate Late"    value={estLateOrders.length}     sub="after 1hr of order"    valueColor="text-red-600"   orders={estLateOrders}     onCardClick={openModal} />
-              <StatCard label="Dispatch On Time" value={dispOnTimeOrders.length}  sub="within 24hrs"          valueColor="text-green-700" orders={dispOnTimeOrders}  onCardClick={openModal} />
+              <StatCard label="Estimate On Time" value={estOnTimeOrders.length}   sub="within 2hr of order"   valueColor="text-green-700" orders={estOnTimeOrders}   onCardClick={openModal} />
+              <StatCard label="Estimate Late"    value={estLateOrders.length}     sub="after 2hr of order"    valueColor="text-red-600"   orders={estLateOrders}     onCardClick={openModal} />
+              <StatCard label="Dispatch On Time" value={dispOnTimeOrders.length}  sub="within 6hrs"          valueColor="text-green-700" orders={dispOnTimeOrders}  onCardClick={openModal} />
             </div>
 
             {/* Row 2 */}

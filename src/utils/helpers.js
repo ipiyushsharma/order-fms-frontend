@@ -28,49 +28,51 @@ export function isDelayed(order) {
   if (!order.orderCreatedTime) return false
   const created = new Date(order.orderCreatedTime).getTime()
   const now = Date.now()
-  const estimateDelay = order.estimateSent === 'No' && (now - created) > 3600000
-  const dispatchDelay = !['Dispatched','Delivered'].includes(order.dispatchStatus) && (now - created) > 86400000
+  // Accounts: 2hr se zyada ho gaya aur estimate nahi bheja
+  const estimateDelay = order.estimateSent === 'No' && (now - created) > 7200000
+  // Dispatch: Customer confirmed ke baad 6hr se zyada
+  const confirmTime = order.customerConfirmation === 'Confirmed' && order.estimateTimestamp
+    ? new Date(order.estimateTimestamp).getTime() : null
+  const dispatchDelay = confirmTime &&
+    order.orderStatus !== 'complete' &&
+    order.orderStatus !== 'cancelled' &&
+    order.dispatchStatus !== 'Complete' &&
+    (now - confirmTime) > 21600000
   return estimateDelay || dispatchDelay
 }
 
-// Estimate timing: 24hrs se andar = On Time, baad mein = Late
+// Estimate timing: 2hrs se andar = On Time, baad mein = Late
 export function getEstimateTiming(order) {
   if (!order.estimateTimestamp || order.estimateSent !== 'Yes') return null
-  const created = new Date(order.orderCreatedTime).getTime()
+  const created  = new Date(order.orderCreatedTime).getTime()
   const estimated = new Date(order.estimateTimestamp).getTime()
   const diff = estimated - created
-  return diff <= 3600000 ? 'ontime' : 'late'
+  return diff <= 7200000 ? 'ontime' : 'late' // 2hr
 }
 
-// Dispatch timing: estimate ke baad 24hrs = On Time, baad mein = Late
+// Dispatch timing: dispatchTimingStatus field use karo (backend ne set kiya hai)
 export function getDispatchTiming(order) {
-  if (!['Dispatched','Delivered'].includes(order.dispatchStatus)) return null
-  const ref = order.estimateTimestamp
-    ? new Date(order.estimateTimestamp).getTime()
-    : new Date(order.orderCreatedTime).getTime()
-  const dispatched = order.dispatchDate
-    ? new Date(order.dispatchDate).getTime()
-    : null
-  if (!dispatched) return null
-  const diff = dispatched - ref
-  return diff <= 86400000 ? 'ontime' : 'late'
+  if (!order.dispatchTimingStatus) return null
+  if (order.dispatchTimingStatus === 'green') return 'ontime'
+  if (order.dispatchTimingStatus === 'red')   return 'late'
+  return null
 }
 
 export function getPayStatusMeta(v) {
-  if (v === 'Paid') return { cls: 'badge-green', dot: 'bg-green-500' }
+  if (v === 'Paid')    return { cls: 'badge-green',  dot: 'bg-green-500' }
   if (v === 'Partial') return { cls: 'badge-yellow', dot: 'bg-amber-500' }
   return { cls: 'badge-red', dot: 'bg-red-500' }
 }
 
 export function getPackStatusMeta(v) {
-  if (v === 'Completed') return { cls: 'badge-green', dot: 'bg-green-500' }
+  if (v === 'Completed')   return { cls: 'badge-green',  dot: 'bg-green-500' }
   if (v === 'In Progress') return { cls: 'badge-yellow', dot: 'bg-amber-500' }
   return { cls: 'badge-gray', dot: 'bg-gray-400' }
 }
 
 export function getDispStatusMeta(v) {
-  if (v === 'Delivered') return { cls: 'badge-teal', dot: 'bg-teal-500' }
-  if (v === 'Dispatched') return { cls: 'badge-green', dot: 'bg-green-500' }
+  if (v === 'Complete')   return { cls: 'badge-green', dot: 'bg-green-500' }
+  if (v === 'Dispatched') return { cls: 'badge-teal',  dot: 'bg-teal-500' }
   return { cls: 'badge-red', dot: 'bg-red-500' }
 }
 
@@ -94,11 +96,12 @@ export function canDo(role, perm) {
 
 export function downloadCSV(orders) {
   const cols = [
-    'orderId','partyName','contactNumber','orderVia','orderReceiver',
-    'productName','quantity',
+    'orderId','partyName','contactNumber','orderVia',
+    'productName',
     'estimateSent','customerConfirmation','paymentMode','paymentStatus',
     'packingStatus','dispatchStatus','dispatchDate','billStatus','biltyStatus',
-    'ledgerUpdated','submittedBy','orderCreatedTime','lastUpdatedBy','lastUpdatedTime'
+    'ledgerUpdated','submittedBy','orderCreatedTime','lastUpdatedBy','lastUpdatedTime',
+    'orderCreatedBy','estimateSentBy','dispatchedBy','transportName'
   ]
   const header = cols.join(',')
   const rows = orders.map(o =>
