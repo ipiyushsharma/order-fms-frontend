@@ -90,49 +90,53 @@ export default function OrdersPage() {
     <div className="flex flex-col h-full overflow-hidden">
 
       {/* Topbar */}
-      <div className="bg-white border-b border-gray-100 px-6 py-3 flex items-center gap-3 flex-shrink-0">
-        <div>
-          <h1 className="text-base font-semibold text-gray-900">Orders</h1>
-          <p className="text-xs text-gray-400">{total} total records</p>
-        </div>
+     {/* Topbar */}
+<div className="bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0">
+  {/* Row 1 — Title + Buttons */}
+  <div className="flex items-center justify-between gap-2">
+    <div>
+      <h1 className="text-base font-semibold text-gray-900">Orders</h1>
+      <p className="text-xs text-gray-400">{total} total records</p>
+    </div>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleRefresh}
+        className={clsx('btn btn-ghost p-2', refreshing && 'opacity-50')}
+        disabled={refreshing}
+      >
+        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+      </button>
+      <button onClick={() => downloadCSV(orders)} className="btn gap-1.5 hidden sm:flex">
+        <Download size={13} />
+        Export
+      </button>
+      {canDo(user?.role, 'create') && (
+        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary gap-1.5">
+          <Plus size={14} />
+          <span className="hidden sm:inline">New Order</span>
+          <span className="sm:hidden">New</span>
+        </button>
+      )}
+    </div>
+  </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 mr-1">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse-soft" />
-            Live
-          </div>
-
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              className="input pl-8 w-52 py-1.5"
-              placeholder="Search order or party…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-
-          <button
-            onClick={handleRefresh}
-            className={clsx('btn btn-ghost p-2', refreshing && 'opacity-50')}
-            disabled={refreshing}
-          >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-          </button>
-
-          <button onClick={() => downloadCSV(orders)} className="btn gap-1.5">
-            <Download size={13} />
-            Export
-          </button>
-
-          {canDo(user?.role, 'create') && (
-            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary gap-1.5">
-              <Plus size={14} />
-              New Order
-            </button>
-          )}
-        </div>
-      </div>
+  {/* Row 2 — Search */}
+  <div className="mt-2 flex items-center gap-2">
+    <div className="relative flex-1">
+      <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <input
+        className="input pl-8 w-full py-1.5"
+        placeholder="Search order or party…"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
+    </div>
+    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse-soft" />
+      <span className="hidden sm:inline">Live</span>
+    </div>
+  </div>
+</div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto px-6 py-5">
