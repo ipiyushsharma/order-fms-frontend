@@ -308,17 +308,21 @@ export default function OrderFormModal({ order, onClose, onSave }) {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn">Cancel</button>
-            <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-50">
-              {saving ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving…
-                </span>
-              ) : isEdit ? 'Save Changes' : 'Create Order'}
-            </button>
-          </div>
+         <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-2">
+  <button type="button" onClick={onClose} className="btn">Cancel</button>
+  <button
+    type="submit"
+    disabled={saving || (isEdit && can.estimate && !can.basic && !form.estimateSentBy?.trim())}
+    className="btn btn-primary disabled:opacity-50"
+  >
+    {saving ? (
+      <span className="flex items-center gap-2">
+        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        Saving…
+      </span>
+    ) : isEdit ? 'Save Changes' : 'Create Order'}
+  </button>
+</div>
         </form>
       </div>
     </div>

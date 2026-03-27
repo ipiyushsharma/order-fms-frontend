@@ -28,29 +28,25 @@ export function isDelayed(order) {
   if (!order.orderCreatedTime) return false
   const created = new Date(order.orderCreatedTime).getTime()
   const now = Date.now()
-  // Accounts: 2hr se zyada ho gaya aur estimate nahi bheja
-  const estimateDelay = order.estimateSent === 'No' && (now - created) > 7200000
-  // Dispatch: Customer confirmed ke baad 6hr se zyada
-  const confirmTime = order.customerConfirmation === 'Confirmed' && order.estimateTimestamp
-    ? new Date(order.estimateTimestamp).getTime() : null
+  const estimateDelay = order.estimateSent === 'No' && (now - created) > 7200000 // 2hr
+  const confirmTime = order.paymentStatus === 'Paid' && order.confirmationTimestamp
+    ? new Date(order.confirmationTimestamp).getTime() : null
   const dispatchDelay = confirmTime &&
     order.orderStatus !== 'complete' &&
     order.orderStatus !== 'cancelled' &&
     order.dispatchStatus !== 'Complete' &&
-    (now - confirmTime) > 21600000
+    (now - confirmTime) > 21600000 // 6hr
   return estimateDelay || dispatchDelay
 }
 
-// Estimate timing: 2hrs se andar = On Time, baad mein = Late
 export function getEstimateTiming(order) {
   if (!order.estimateTimestamp || order.estimateSent !== 'Yes') return null
-  const created  = new Date(order.orderCreatedTime).getTime()
+  const created   = new Date(order.orderCreatedTime).getTime()
   const estimated = new Date(order.estimateTimestamp).getTime()
   const diff = estimated - created
   return diff <= 7200000 ? 'ontime' : 'late' // 2hr
 }
 
-// Dispatch timing: dispatchTimingStatus field use karo (backend ne set kiya hai)
 export function getDispatchTiming(order) {
   if (!order.dispatchTimingStatus) return null
   if (order.dispatchTimingStatus === 'green') return 'ontime'
@@ -99,7 +95,7 @@ export function downloadCSV(orders) {
     'orderId','partyName','contactNumber','orderVia',
     'productName',
     'estimateSent','customerConfirmation','paymentMode','paymentStatus',
-    'packingStatus','dispatchStatus','dispatchDate','billStatus','biltyStatus',
+    'packingStatus','dispatchStatus','billStatus','biltyStatus',
     'ledgerUpdated','submittedBy','orderCreatedTime','lastUpdatedBy','lastUpdatedTime',
     'orderCreatedBy','estimateSentBy','dispatchedBy','transportName'
   ]
